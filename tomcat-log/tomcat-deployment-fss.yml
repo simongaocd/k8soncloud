@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+    name: ctg-tomcat-fss
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        ctg-app: ctg-tomcat-fss
+    template:
+      metadata:
+        labels:
+            ctg-app: ctg-tomcat-fss
+      spec:
+        containers:
+        - name: ctg-tomcat-fss
+          image: nrt.ocir.io/ocichina001/mytest/tomcat8
+          volumeMounts:
+          - name: varlogtomcat8
+            mountPath: /usr/local/tomcat/logs
+            readOnly: false
+          env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          ports:
+          - containerPort: 8080
+        imagePullSecrets:
+        - name: ocirsecret
+        volumes:
+        - name: varlogtomcat8
+          persistentVolumeClaim:
+            claimName: oke-fsspvc
+            readOnly: false
